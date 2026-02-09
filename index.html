@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendari Familiar - Mode Fosc</title>
+    <!-- ICONES PER A PANTALLA D'INICI -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23121212' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='%23bb86fc'>📅</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23121212' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='%23bb86fc'>📅</text></svg>">
+<meta name="theme-color" content="#121212">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #404040;
+            --accent-color: #bb86fc;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            
+            /* Colors dels membres */
+            --paula-color: #FFD54F; /* Groc */
+            --oriol-color: #66BB6A; /* Verd */
+            --albert-color: #42A5F5; /* Blau */
+            --natalia-color: #FF7043; /* Taronja-rosa */
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* PANTALLA DE SELECCIÓ DE MEMBRE */
+        .member-selection-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .member-selection-title {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--accent-color);
+        }
+        
+        .member-selection-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .member-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .member-selection-card {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+        
+        .member-selection-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+            border-color: var(--border-color);
+        }
+        
+        .member-selection-card.selected {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px rgba(187, 134, 252, 0.3);
+        }
+        
+        .member-selection-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .member-selection-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .member-selection-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-top: 5px;
+        }
+        
+        .continue-btn {
+            background-color: var(--accent-color);
+            color: var(--bg-primary);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 40px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .continue-btn:hover {
+            background-color: #9b6bdf;
+            transform: scale(1.05);
+        }
+        
+        .continue-btn:disabled {
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* APLICACIÓ PRINCIPAL */
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .current-member-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .app-title {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+        }
+        
+        .change-member-btn {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .change-member-btn:hover {
+            background-color: var(--border-color);
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        @media (min-width: 1024px) {
+            .main-content {
+                flex-direction: row;
+            }
+            
+            .calendar-section {
+                flex: 2;
+            }
+            
+            .events-section {
+                flex: 1;
+            }
+        }
+        
+        .section {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-color);
+        }
+        
+        /* CALENDARI */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .month-nav {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            background-color: var(--bg-tertiary);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: var(--border-color);
+        }
+        
+        .current-month {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            flex-grow: 1;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 12px 0;
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .calendar-day {
+            min-height: 120px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+            background-color: var(--bg-tertiary);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .calendar-day:hover {
+            background-color: #3a3a3a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .day-number {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .today {
+            background-color: #333344;
+            border-color: var(--accent-color);
+        }
+        
+        .other-month {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+        
+        .other-month .day-number {
+            color: var(--text-secondary);
+        }
+        
+        .day-events {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .event-indicator {
+            padding: 4px 6px;
+            border-radius: 4px;
+            color: #000;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .event-indicator:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+        
+        /* FORMULARI D'ESDEVENIMENTS */
+        .event-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+        
+        input, textarea, select {
+            padding: 12px 15px;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .repeat-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .repeat-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: var(--bg-tertiary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .repeat-option:hover {
+            background-color: #3a3a3a;
+        }
+        
+        .repeat-option.selected {
+            background-color: #333344;
+            border-left: 3px solid var(--accent-color);
+        }
+        
+        .repeat-option input[type="radio"] {
+            margin: 0;
+            accent-color: var(--accent-color);
+        }
+        
+        .repeat-days-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .repeat-day-option {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--bg-tertiary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        
+        .repeat-day-option.selected {
+            background-color: var(--accent-color);
+            color: var(--bg-primary);
+        }
+        
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: var(--bg-primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #9b6bdf;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(187, 134, 252, 0.3);
+        }
+        
+        /* LLISTA D'ESDEVENIMENTS */
+        .events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .event-item {
+            padding: 18px;
+            border-radius: 10px;
+            border-left: 4px solid;
+            background-color: var(--bg-tertiary);
+        }
+        
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .event-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .event-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .event-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .event-member-tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .event-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .action-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        .delete-btn:hover {
+            color: #ff6b6b;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background-color: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+        
+        .close-modal:hover {
+            color: var(--text-primary);
+        }
+        
+        .day-events-modal-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        /* FOOTER */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .calendar-day {
+                min-height: 100px;
+                padding: 8px 5px;
+            }
+            
+            .event-indicator {
+                font-size: 0.7rem;
+                padding: 3px 4px;
+            }
+            
+            .day-number {
+                font-size: 0.9rem;
+            }
+            
+            .member-selection-grid {
+                grid-template-columns: 1fr;
+                max-width: 300px;
+            }
+            
+            .current-month {
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .calendar-day-header {
+                font-size: 0.8rem;
+                padding: 8px 0;
+            }
+            
+            .calendar-day {
+                min-height: 85px;
+            }
+            
+            .app-title {
+                font-size: 1.4rem;
+            }
+            
+            .current-month {
+                font-size: 1.1rem;
+            }
+            
+            .section {
+                padding: 20px 15px;
+            }
+        }
+        
+        /* ESTILS D'ESDEVENIMENTS RECORRENTS */
+        .recurring-indicator {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .event-item.recurring {
+            border-left-width: 6px;
+            border-left-style: double;
+        }
+    </style>
+</head>
+<body>
+    <!-- PANTALLA DE SELECCIÓ DE MEMBRE -->
+    <div class="member-selection-screen" id="memberSelectionScreen">
+        <h1 class="member-selection-title">Calendari Familiar</h1>
+        <p class="member-selection-subtitle">Selecciona un membre per accedir al calendari. Podràs afegir esdeveniments i veure els plans familiars.</p>
+        
+        <div class="member-selection-grid">
+            <div class="member-selection-card" data-member="paula">
+                <i class="fas fa-female member-selection-icon" style="color: var(--paula-color);"></i>
+                <div class="member-selection-name">Paula</div>
+                <div class="member-selection-color" style="background-color: var(--paula-color);"></div>
+            </div>
+            
+            <div class="member-selection-card" data-member="oriol">
+                <i class="fas fa-male member-selection-icon" style="color: var(--oriol-color);"></i>
+                <div class="member-selection-name">Oriol</div>
+                <div class="member-selection-color" style="background-color: var(--oriol-color);"></div>
+            </div>
+            
+            <div class="member-selection-card" data-member="albert">
+                <i class="fas fa-male member-selection-icon" style="color: var(--albert-color);"></i>
+                <div class="member-selection-name">Albert</div>
+                <div class="member-selection-color" style="background-color: var(--albert-color);"></div>
+            </div>
+            
+            <div class="member-selection-card" data-member="natalia">
+                <i class="fas fa-female member-selection-icon" style="color: var(--natalia-color);"></i>
+                <div class="member-selection-name">Natalia</div>
+                <div class="member-selection-color" style="background-color: var(--natalia-color);"></div>
+            </div>
+        </div>
+        
+        <button class="continue-btn" id="continueBtn" disabled>
+            <i class="fas fa-arrow-right"></i> Continuar al Calendari
+        </button>
+    </div>
+    
+    <!-- APLICACIÓ PRINCIPAL (OCULTA INICIALMENT) -->
+    <div class="app-container hidden" id="appContainer">
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="app-title"><i class="fas fa-calendar-alt"></i> Calendari Familiar</h1>
+                <div class="current-member-display" id="currentMemberDisplay">
+                    <!-- Es mostrarà dinàmicament -->
+                </div>
+            </div>
+            <button class="change-member-btn" id="changeMemberBtn">
+                <i class="fas fa-exchange-alt"></i> Canviar membre
+            </button>
+        </header>
+        
+        <main class="main-content">
+            <section class="calendar-section section">
+                <h2 class="section-title"><i class="fas fa-calendar-day"></i> Calendari</h2>
+                
+                <div class="calendar-header">
+                    <div class="month-nav">
+                        <button class="nav-btn" id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                        <button class="nav-btn" id="today-btn">Avui</button>
+                    </div>
+                    <div class="current-month" id="current-month">Maig 2023</div>
+                    <div class="month-nav">
+                        <button class="nav-btn" id="next-month"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Calendari generat per JavaScript -->
+                </div>
+            </section>
+            
+            <section class="events-section">
+                <div class="section">
+                    <h2 class="section-title"><i class="fas fa-plus-circle"></i> Afegir Esdeveniment</h2>
+                    
+                    <form class="event-form" id="event-form">
+                        <div class="form-group">
+                            <label for="event-title">Títol de l'esdeveniment</label>
+                            <input type="text" id="event-title" placeholder="Ex: Anar al metge" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="event-date">Data</label>
+                            <input type="date" id="event-date" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Membres participants</label>
+                            <div class="repeat-days-selector" id="members-selector">
+                                <div class="repeat-day-option" data-member="paula" style="background-color: var(--paula-color);">P</div>
+                                <div class="repeat-day-option" data-member="oriol" style="background-color: var(--oriol-color);">O</div>
+                                <div class="repeat-day-option" data-member="albert" style="background-color: var(--albert-color);">A</div>
+                                <div class="repeat-day-option" data-member="natalia" style="background-color: var(--natalia-color);">N</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Repetir esdeveniment</label>
+                            <div class="repeat-options">
+                                <label class="repeat-option">
+                                    <input type="radio" name="repeat" value="none" checked> No repetir
+                                </label>
+                                <label class="repeat-option">
+                                    <input type="radio" name="repeat" value="daily"> Diàriament
+                                </label>
+                                <label class="repeat-option">
+                                    <input type="radio" name="repeat" value="weekly"> Setmanalment
+                                </label>
+                                <label class="repeat-option">
+                                    <input type="radio" name="repeat" value="custom"> Dies específics
+                                </label>
+                            </div>
+                            
+                            <div class="repeat-days-selector hidden" id="custom-days-selector">
+                                <div class="repeat-day-option" data-day="1">Dl</div>
+                                <div class="repeat-day-option" data-day="2">Dt</div>
+                                <div class="repeat-day-option" data-day="3">Dc</div>
+                                <div class="repeat-day-option" data-day="4">Dj</div>
+                                <div class="repeat-day-option" data-day="5">Dv</div>
+                                <div class="repeat-day-option" data-day="6">Ds</div>
+                                <div class="repeat-day-option" data-day="0">Dg</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="event-description">Descripció (opcional)</label>
+                            <textarea id="event-description" placeholder="Detalls de l'esdeveniment..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-calendar-plus"></i> Afegir Esdeveniment
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="section" style="margin-top: 25px;">
+                    <h2 class="section-title"><i class="fas fa-list"></i> Els meus Esdeveniments</h2>
+                    
+                    <div class="events-list" id="events-list">
+                        <!-- Esdeveniments carregats aquí -->
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- MODAL D'ESDEVENIMENTS DEL DIA -->
+        <div class="modal" id="dayEventsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-day-title">Esdeveniments del dia</h3>
+                    <button class="close-modal" id="closeDayModal">&times;</button>
+                </div>
+                <div id="modal-day-content">
+                    <!-- Contingut del modal -->
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Calendari Familiar - Mode Fosc Minimalista | Esdeveniments emmagatzemats localment</p>
+        </footer>
+    </div>
+
+    <script>
+        // Estat de l'aplicació
+        let currentUser = null;
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let events = JSON.parse(localStorage.getItem('familyCalendarEvents')) || [];
+        let selectedMembers = new Set();
+        let selectedRepeatDays = new Set();
+        
+        // Noms dels mesos i dies en català
+        const months = [
+            'Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny',
+            'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'
+        ];
+        
+        const days = ['Dl', 'Dt', 'Dc', 'Dj', 'Dv', 'Ds', 'Dg'];
+        const fullDays = ['Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte', 'Diumenge'];
+        
+        // Colors dels membres
+        const memberColors = {
+            paula: '#FFD54F',
+            oriol: '#66BB6A', 
+            albert: '#42A5F5',
+            natalia: '#FF7043'
+        };
+        
+        const memberNames = {
+            paula: 'Paula',
+            oriol: 'Oriol',
+            albert: 'Albert',
+            natalia: 'Natalia'
+        };
+        
+        // Elements del DOM
+        const memberSelectionScreen = document.getElementById('memberSelectionScreen');
+        const appContainer = document.getElementById('appContainer');
+        const continueBtn = document.getElementById('continueBtn');
+        const changeMemberBtn = document.getElementById('changeMemberBtn');
+        const currentMemberDisplay = document.getElementById('currentMemberDisplay');
+        const calendarGrid = document.getElementById('calendar-grid');
+        const currentMonthElement = document.getElementById('current-month');
+        const prevMonthButton = document.getElementById('prev-month');
+        const nextMonthButton = document.getElementById('next-month');
+        const todayButton = document.getElementById('today-btn');
+        const eventForm = document.getElementById('event-form');
+        const eventsList = document.getElementById('events-list');
+        const dayEventsModal = document.getElementById('dayEventsModal');
+        const closeDayModal = document.getElementById('closeDayModal');
+        const membersSelector = document.getElementById('members-selector');
+        const customDaysSelector = document.getElementById('custom-days-selector');
+        const modalDayTitle = document.getElementById('modal-day-title');
+        const modalDayContent = document.getElementById('modal-day-content');
+        
+        // Inicialització de l'aplicació
+        function init() {
+            // Configurar esdeveniments de selecció de membre
+            setupMemberSelection();
+            
+            // Configurar botó per continuar
+            continueBtn.addEventListener('click', () => {
+                if (currentUser) {
+                    memberSelectionScreen.classList.add('hidden');
+                    appContainer.classList.remove('hidden');
+                    updateCurrentMemberDisplay();
+                    generateCalendar();
+                    updateEventsList();
+                }
+            });
+            
+            // Configurar botó per canviar de membre
+            changeMemberBtn.addEventListener('click', () => {
+                appContainer.classList.add('hidden');
+                memberSelectionScreen.classList.remove('hidden');
+            });
+            
+            // Configurar calendari
+            prevMonthButton.addEventListener('click', () => changeMonth(-1));
+            nextMonthButton.addEventListener('click', () => changeMonth(1));
+            todayButton.addEventListener('click', goToToday);
+            
+            // Configurar formulari d'esdeveniments
+            eventForm.addEventListener('submit', addEvent);
+            
+            // Configurar selecció de membres
+            setupMembersSelector();
+            
+            // Configurar opcions de repetició
+            setupRepeatOptions();
+            
+            // Configurar modal
+            closeDayModal.addEventListener('click', () => {
+                dayEventsModal.style.display = 'none';
+            });
+            
+            // Tancar modal en fer clic fora
+            window.addEventListener('click', (e) => {
+                if (e.target === dayEventsModal) {
+                    dayEventsModal.style.display = 'none';
+                }
+            });
+            
+            // Establir data d'avui al formulari
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('event-date').value = today;
+            
+            // Seleccionar automàticament l'usuari actual al formulari
+            membersSelector.querySelectorAll('.repeat-day-option').forEach(option => {
+                if (option.dataset.member === currentUser) {
+                    option.classList.add('selected');
+                    selectedMembers.add(currentUser);
+                }
+            });
+        }
+        
+        // Configurar selecció de membre
+        function setupMemberSelection() {
+            const memberCards = document.querySelectorAll('.member-selection-card');
+            
+            memberCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Desseleccionar totes les targetes
+                    memberCards.forEach(c => c.classList.remove('selected'));
+                    
+                    // Seleccionar la targeta clicada
+                    card.classList.add('selected');
+                    
+                    // Establir l'usuari actual
+                    currentUser = card.dataset.member;
+                    
+                    // Habilitar el botó de continuar
+                    continueBtn.disabled = false;
+                });
+            });
+        }
+        
+        // Configurar selector de membres al formulari
+        function setupMembersSelector() {
+            membersSelector.querySelectorAll('.repeat-day-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const member = option.dataset.member;
+                    
+                    if (selectedMembers.has(member)) {
+                        selectedMembers.delete(member);
+                        option.classList.remove('selected');
+                    } else {
+                        selectedMembers.add(member);
+                        option.classList.add('selected');
+                    }
+                });
+            });
+        }
+        
+        // Configurar opcions de repetició
+        function setupRepeatOptions() {
+            const repeatOptions = document.querySelectorAll('input[name="repeat"]');
+            const customDaysOptions = customDaysSelector.querySelectorAll('.repeat-day-option');
+            
+            repeatOptions.forEach(option => {
+                option.addEventListener('change', () => {
+                    if (option.value === 'custom') {
+                        customDaysSelector.classList.remove('hidden');
+                    } else {
+                        customDaysSelector.classList.add('hidden');
+                    }
+                });
+            });
+            
+            customDaysOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const day = option.dataset.day;
+                    
+                    if (selectedRepeatDays.has(day)) {
+                        selectedRepeatDays.delete(day);
+                        option.classList.remove('selected');
+                    } else {
+                        selectedRepeatDays.add(day);
+                        option.classList.add('selected');
+                    }
+                });
+            });
+        }
+        
+        // Actualitzar visualització del membre actual
+        function updateCurrentMemberDisplay() {
+            currentMemberDisplay.innerHTML = `
+                <div style="background-color: ${memberColors[currentUser]}; width: 20px; height: 20px; border-radius: 50%;"></div>
+                <span>${memberNames[currentUser]}</span>
+            `;
+            currentMemberDisplay.style.backgroundColor = `${memberColors[currentUser]}20`;
+            currentMemberDisplay.style.color = memberColors[currentUser];
+        }
+        
+        // Generar calendari per al mes actual
+        function generateCalendar() {
+            // Netejar calendari
+            calendarGrid.innerHTML = '';
+            
+            // Establir text del mes actual
+            currentMonthElement.textContent = `${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            
+            // Afegir capçaleres dels dies
+            days.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+            
+            // Obtenir primer i últim dia del mes
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const totalDays = lastDay.getDate();
+            const firstDayIndex = firstDay.getDay(); // 0 = diumenge, 1 = dilluns, etc.
+            
+            // Ajustar per a setmana catalana (dilluns primer)
+            const adjustedFirstDayIndex = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+            
+            // Obtenir últim dia del mes anterior
+            const prevMonthLastDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+            
+            // Afegir cel·les buides per als dies abans del primer dia del mes
+            for (let i = 0; i < adjustedFirstDayIndex; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day other-month';
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = prevMonthLastDay - adjustedFirstDayIndex + i + 1;
+                emptyDay.appendChild(dayNumber);
+                
+                calendarGrid.appendChild(emptyDay);
+            }
+            
+            // Afegir cel·les per a cada dia del mes
+            for (let day = 1; day <= totalDays; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                // Comprovar si és avui
+                const today = new Date();
+                const isToday = today.getDate() === day && 
+                                today.getMonth() === currentDate.getMonth() && 
+                                today.getFullYear() === currentDate.getFullYear();
+                
+                if (isToday) {
+                    dayElement.classList.add('today');
+                }
+                
+                // Número del dia
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = day;
+                dayElement.appendChild(dayNumber);
+                
+                // Esdeveniments per a aquest dia
+                const dayEvents = document.createElement('div');
+                dayEvents.className = 'day-events';
+                
+                // Trobar esdeveniments per a aquest dia
+                const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                const dayEventsList = getEventsForDate(dayDate);
+                
+                // Afegir indicadors d'esdeveniments (màxim 3)
+                dayEventsList.slice(0, 3).forEach(event => {
+                    // Comprovar si l'usuari actual participa en l'esdeveniment
+                    if (event.members && event.members.includes(currentUser)) {
+                        const eventColor = getEventColor(event);
+                        const eventIndicator = document.createElement('div');
+                        eventIndicator.className = 'event-indicator';
+                        eventIndicator.textContent = event.title;
+                        eventIndicator.style.backgroundColor = eventColor;
+                        
+                        // Afegir icona d'esdeveniment recurrent
+                        if (event.repeat !== 'none') {
+                            const recurringIcon = document.createElement('i');
+                            recurringIcon.className = 'fas fa-redo';
+                            recurringIcon.style.marginRight = '3px';
+                            recurringIcon.style.fontSize = '0.7rem';
+                            eventIndicator.prepend(recurringIcon);
+                        }
+                        
+                        eventIndicator.title = `${event.title} (${getMemberNames(event.members)})`;
+                        
+                        // Afegir esdeveniment per mostrar detalls
+                        eventIndicator.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            showEventDetails(event);
+                        });
+                        
+                        dayEvents.appendChild(eventIndicator);
+                    }
+                });
+                
+                // Mostrar "+ més" si hi ha més de 3 esdeveniments
+                const userEventsCount = dayEventsList.filter(event => 
+                    event.members && event.members.includes(currentUser)
+                ).length;
+                
+                if (userEventsCount > 3) {
+                    const moreIndicator = document.createElement('div');
+                    moreIndicator.className = 'event-indicator';
+                    moreIndicator.textContent = `+${userEventsCount - 3} més`;
+                    moreIndicator.style.backgroundColor = '#757575';
+                    moreIndicator.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showDayEvents(dayDate);
+                    });
+                    dayEvents.appendChild(moreIndicator);
+                }
+                
+                dayElement.appendChild(dayEvents);
+                
+                // Afegir esdeveniment per fer clic al dia
+                dayElement.addEventListener('click', () => {
+                    // Establir aquesta data al formulari
+                    const formattedDate = formatDateForInput(dayDate);
+                    document.getElementById('event-date').value = formattedDate;
+                    
+                    // Fer scroll al formulari
+                    document.querySelector('.event-form').scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('event-title').focus();
+                    
+                    // Obrir modal amb esdeveniments del dia
+                    showDayEvents(dayDate);
+                });
+                
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // Afegir dies del mes següent per completar la graella
+            const totalCells = 42; // 6 setmanes * 7 dies
+            const cellsUsed = adjustedFirstDayIndex + totalDays;
+            const remainingCells = totalCells - cellsUsed;
+            
+            for (let i = 1; i <= remainingCells; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day other-month';
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = i;
+                emptyDay.appendChild(dayNumber);
+                
+                calendarGrid.appendChild(emptyDay);
+            }
+        }
+        
+        // Canviar mes
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            generateCalendar();
+        }
+        
+        // Anar a avui
+        function goToToday() {
+            currentDate = new Date();
+            generateCalendar();
+        }
+        
+        // Format de data per a camp d'entrada (YYYY-MM-DD)
+        function formatDateForInput(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Format de data per a visualització
+        function formatDateForDisplay(date) {
+            return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
+        }
+        
+        // Obtenir esdeveniments per a una data específica (incloent recurrents)
+        function getEventsForDate(date) {
+            const dayOfWeek = date.getDay(); // 0 = diumenge, 1 = dilluns, etc.
+            const adjustedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ajustar per a dilluns=0
+            
+            return events.filter(event => {
+                const eventDate = new Date(event.date);
+                
+                // Comprovar si és la data exacta de l'esdeveniment
+                if (eventDate.getDate() === date.getDate() &&
+                    eventDate.getMonth() === date.getMonth() &&
+                    eventDate.getFullYear() === date.getFullYear()) {
+                    return true;
+                }
+                
+                // Comprovar esdeveniments recurrents
+                if (event.repeat) {
+                    if (event.repeat === 'daily') {
+                        return true;
+                    } else if (event.repeat === 'weekly') {
+                        return eventDate.getDay() === date.getDay();
+                    } else if (event.repeat === 'custom' && event.repeatDays) {
+                        return event.repeatDays.includes(adjustedDayOfWeek.toString());
+                    }
+                }
+                
+                return false;
+            });
+        }
+        
+        // Obtenir color per a un esdeveniment (basat en els membres)
+        function getEventColor(event) {
+            if (event.members && event.members.length > 0) {
+                // Si hi ha múltiples membres, retornar el color del primer
+                return memberColors[event.members[0]];
+            }
+            return '#757575'; // Color per defecte
+        }
+        
+        // Obtenir noms dels membres separats per comes
+        function getMemberNames(memberArray) {
+            if (!memberArray || memberArray.length === 0) return 'Cap membre';
+            
+            return memberArray.map(member => memberNames[member]).join(', ');
+        }
+        
+        // Afegir nou esdeveniment
+        function addEvent(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('event-title').value;
+            const date = document.getElementById('event-date').value;
+            const description = document.getElementById('event-description').value;
+            const repeatOption = document.querySelector('input[name="repeat"]:checked').value;
+            
+            if (!title || !date || selectedMembers.size === 0) {
+                alert('Si us plau, omple tots els camps obligatoris i selecciona almenys un membre');
+                return;
+            }
+            
+            const newEvent = {
+                id: Date.now(),
+                title,
+                date,
+                members: Array.from(selectedMembers),
+                description,
+                repeat: repeatOption,
+                createdBy: currentUser,
+                createdDate: new Date().toISOString()
+            };
+            
+            // Afegir dies de repetició personalitzats
+            if (repeatOption === 'custom' && selectedRepeatDays.size > 0) {
+                newEvent.repeatDays = Array.from(selectedRepeatDays);
+            }
+            
+            events.push(newEvent);
+            saveEvents();
+            
+            // Reiniciar formulari
+            eventForm.reset();
+            
+            // Restablir opcions per defecte
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('event-date').value = today;
+            
+            // Restablir selector de membres
+            membersSelector.querySelectorAll('.repeat-day-option').forEach(option => {
+                option.classList.remove('selected');
+                if (option.dataset.member === currentUser) {
+                    option.classList.add('selected');
+                }
+            });
+            
+            // Restablir conjunt de membres seleccionats
+            selectedMembers.clear();
+            selectedMembers.add(currentUser);
+            
+            // Restablir dies de repetició
+            selectedRepeatDays.clear();
+            customDaysSelector.querySelectorAll('.repeat-day-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Actualitzar calendari i llista d'esdeveniments
+            generateCalendar();
+            updateEventsList();
+            
+            // Mostrar confirmació
+            alert(`Esdeveniment "${title}" afegit correctament!`);
+        }
+        
+        // Mostrar esdeveniments del dia en modal
+        function showDayEvents(date) {
+            const eventsForDay = getEventsForDate(date);
+            const formattedDate = formatDateForDisplay(date);
+            
+            modalDayTitle.textContent = `Esdeveniments per al ${formattedDate}`;
+            
+            if (eventsForDay.length === 0) {
+                modalDayContent.innerHTML = `
+                    <p style="text-align: center; color: var(--text-secondary); padding: 30px 0;">
+                        No hi ha esdeveniments per a aquest dia.
+                    </p>
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" onclick="document.getElementById('event-title').focus(); dayEventsModal.style.display='none'">
+                            <i class="fas fa-plus"></i> Afegir esdeveniment
+                        </button>
+                    </div>
+                `;
+            } else {
+                let eventsHTML = '';
+                
+                // Esdeveniments de l'usuari actual primer
+                const userEvents = eventsForDay.filter(event => 
+                    event.members && event.members.includes(currentUser)
+                );
+                
+                const otherEvents = eventsForDay.filter(event => 
+                    !event.members || !event.members.includes(currentUser)
+                );
+                
+                if (userEvents.length > 0) {
+                    eventsHTML += `<h4 style="margin-bottom: 15px; color: var(--accent-color);">Els meus esdeveniments</h4>`;
+                    eventsHTML += createEventsHTML(userEvents);
+                }
+                
+                if (otherEvents.length > 0) {
+                    eventsHTML += `<h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--text-secondary);">Altres esdeveniments</h4>`;
+                    eventsHTML += createEventsHTML(otherEvents);
+                }
+                
+                modalDayContent.innerHTML = eventsHTML;
+                
+                // Afegir esdeveniments als botons d'eliminar
+                modalDayContent.querySelectorAll('.delete-event-btn').forEach(btn => {
+                    const eventId = parseInt(btn.dataset.eventId);
+                    btn.addEventListener('click', () => {
+                        deleteEvent(eventId);
+                    });
+                });
+            }
+            
+            dayEventsModal.style.display = 'flex';
+        }
+        
+        // Crear HTML per a una llista d'esdeveniments
+        function createEventsHTML(eventsList) {
+            let html = '<div class="day-events-modal-list">';
+            
+            eventsList.forEach(event => {
+                const eventColor = getEventColor(event);
+                const isRecurring = event.repeat && event.repeat !== 'none';
+                
+                html += `
+                    <div class="event-item ${isRecurring ? 'recurring' : ''}" style="border-left-color: ${eventColor}">
+                        <div class="event-header">
+                            <div class="event-title">${event.title}</div>
+                            ${event.createdBy === currentUser ? `
+                                <button class="action-btn delete-btn delete-event-btn" data-event-id="${event.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="event-members">
+                            ${event.members ? event.members.map(member => `
+                                <span class="event-member-tag" style="background-color: ${memberColors[member]}">
+                                    ${memberNames[member]}
+                                </span>
+                            `).join('') : ''}
+                        </div>
+                        
+                        ${event.description ? `
+                            <p style="margin-top: 10px; color: var(--text-secondary);">
+                                ${event.description}
+                            </p>
+                        ` : ''}
+                        
+                        ${isRecurring ? `
+                            <div class="recurring-indicator">
+                                <i class="fas fa-redo"></i>
+                                ${getRepeatText(event)}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+        
+        // Obtenir text descriptiu per a repetició
+        function getRepeatText(event) {
+            if (event.repeat === 'daily') return 'Es repeteix diàriament';
+            if (event.repeat === 'weekly') return 'Es repeteix setmanalment';
+            if (event.repeat === 'custom' && event.repeatDays) {
+                const dayNames = event.repeatDays.map(day => days[parseInt(day)]);
+                return `Es repeteix els ${dayNames.join(', ')}`;
+            }
+            return '';
+        }
+        
+        // Mostrar detalls d'un esdeveniment
+        function showEventDetails(event) {
+            const eventColor = getEventColor(event);
+            const isRecurring = event.repeat && event.repeat !== 'none';
+            
+            const modalHTML = `
+                <div class="event-item" style="border-left-color: ${eventColor}">
+                    <div class="event-header">
+                        <div class="event-title">${event.title}</div>
+                    </div>
+                    
+                    <div class="event-date" style="margin-bottom: 10px;">
+                        ${formatDateForDisplay(new Date(event.date))}
+                        ${isRecurring ? ` | ${getRepeatText(event)}` : ''}
+                    </div>
+                    
+                    <div class="event-members">
+                        ${event.members ? event.members.map(member => `
+                            <span class="event-member-tag" style="background-color: ${memberColors[member]}">
+                                ${memberNames[member]}
+                            </span>
+                        `).join('') : ''}
+                    </div>
+                    
+                    ${event.description ? `
+                        <p style="margin-top: 15px;">
+                            ${event.description}
+                        </p>
+                    ` : ''}
+                    
+                    ${event.createdBy === currentUser ? `
+                        <div class="event-actions">
+                            <button class="action-btn delete-btn" onclick="deleteEvent(${event.id}); dayEventsModal.style.display='none'">
+                                <i class="fas fa-trash"></i> Eliminar esdeveniment
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            modalDayTitle.textContent = 'Detalls de l\'esdeveniment';
+            modalDayContent.innerHTML = modalHTML;
+            dayEventsModal.style.display = 'flex';
+        }
+        
+        // Eliminar esdeveniment
+        function deleteEvent(eventId) {
+            if (confirm('Estàs segur que vols eliminar aquest esdeveniment?')) {
+                events = events.filter(event => event.id !== eventId);
+                saveEvents();
+                generateCalendar();
+                updateEventsList();
+                
+                // Tancar modal si està obert
+                dayEventsModal.style.display = 'none';
+            }
+        }
+        
+        // Actualitzar llista d'esdeveniments
+        function updateEventsList() {
+            eventsList.innerHTML = '';
+            
+            // Filtrar esdeveniments per a l'usuari actual
+            const userEvents = events.filter(event => 
+                event.members && event.members.includes(currentUser)
+            );
+            
+            if (userEvents.length === 0) {
+                eventsList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-plus"></i>
+                        <p>No tens esdeveniments planificats.<br>Afegeix el primer esdeveniment!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Ordenar esdeveniments per data (més propers primer)
+            const sortedEvents = [...userEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Obtenir esdeveniments propers (10 següents)
+            const upcomingEvents = sortedEvents.slice(0, 10);
+            
+            upcomingEvents.forEach(event => {
+                const eventDate = new Date(event.date);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const eventDay = new Date(event.date);
+                eventDay.setHours(0, 0, 0, 0);
+                
+                // Calcular diferència de dies
+                const diffTime = eventDay - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                let dayInfo = '';
+                if (diffDays === 0) {
+                    dayInfo = '<span style="color: #66BB6A;">(Avui)</span>';
+                } else if (diffDays === 1) {
+                    dayInfo = '<span style="color: #42A5F5;">(Demà)</span>';
+                } else if (diffDays > 0) {
+                    dayInfo = `<span style="color: #FFD54F;">(en ${diffDays} dies)</span>`;
+                } else {
+                    dayInfo = '<span style="color: #999;">(passat)</span>';
+                }
+                
+                const eventColor = getEventColor(event);
+                const isRecurring = event.repeat && event.repeat !== 'none';
+                
+                const eventElement = document.createElement('div');
+                eventElement.className = `event-item ${isRecurring ? 'recurring' : ''}`;
+                eventElement.style.borderLeftColor = eventColor;
+                
+                eventElement.innerHTML = `
+                    <div class="event-header">
+                        <div class="event-title">${event.title}</div>
+                    </div>
+                    <div class="event-date">
+                        ${formatDateForDisplay(eventDate)} ${dayInfo}
+                    </div>
+                    <div class="event-members">
+                        ${event.members ? event.members.map(member => `
+                            <span class="event-member-tag" style="background-color: ${memberColors[member]}">
+                                ${memberNames[member]}
+                            </span>
+                        `).join('') : ''}
+                    </div>
+                    ${event.description ? `<p style="margin-top: 10px; font-size: 0.95rem; color: var(--text-secondary);">${event.description}</p>` : ''}
+                    ${isRecurring ? `
+                        <div class="recurring-indicator">
+                            <i class="fas fa-redo"></i>
+                            ${getRepeatText(event)}
+                        </div>
+                    ` : ''}
+                    <div class="event-actions">
+                        <button class="action-btn" onclick="showEventDetails(${JSON.stringify(event).replace(/"/g, '&quot;')})">
+                            <i class="fas fa-info-circle"></i> Detalls
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteEvent(${event.id})">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                `;
+                
+                eventsList.appendChild(eventElement);
+            });
+        }
+        
+        // Guardar esdeveniments a localStorage
+        function saveEvents() {
+            localStorage.setItem('familyCalendarEvents', JSON.stringify(events));
+        }
+        
+        // Inicialitzar l'aplicació quan es carregui la pàgina
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
